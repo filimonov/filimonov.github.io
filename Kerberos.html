@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Mikhail Filimonov mfilimonov@altinity.com" />
+  <meta name="date" content="2020-03-24" />
+  <title>Kerberos and Clickhouse</title>
+  <style type="text/css">
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="https://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="https://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Kerberos and Clickhouse</h1>
+  <p class="author">
+Mikhail Filimonov <a href="mailto:mfilimonov@altinity.com" class="email">mfilimonov@altinity.com</a>
+  </p>
+  <p class="date">March 24, 2020</p>
+</div>
+<div class="slide section level1">
+
+<!--
+https://pandoc.org/
+pandoc -s Kerberos.md -t slidy -o Kerberos.html
+-->
+</div>
+<div id="kerberos" class="slide section level1">
+<h1>Kerberos</h1>
+<p><img src="http://web.mit.edu/KERBEROS/images/dog-ring.jpg" /></p>
+<ul>
+<li>SSO придуманный в 1988 в MIT.</li>
+<li>Широко используется в крупных фирмах (безопасность!)</li>
+<li>Последние 25 лет - версия 5, ака krb5</li>
+<li>Описан в RFC4120 (до 2005 года - RFC1510)</li>
+<li>Microsoft также способствовали популяризации, начав использовать Kerberos в AD в Windows 2000.</li>
+</ul>
+</div>
+<div id="краткое-описание.-решаемая-задача" class="slide section level1">
+<h1>Краткое описание. Решаемая задача</h1>
+<ul>
+<li><p>Пользователю нужно логиниться на разные сервисы.</p></li>
+<li><p>Пользователей в организации много, сервисов тоже</p></li>
+<li><p>Пользователь не хочет знать миллион паролей, вводить пароли снова и снова, или хранить их в небезопасных местах.</p></li>
+<li><p>Админ хочет управлять доступами из одного места (а не конфигурировать каждый сервис отдельно); не хочет заводить отдельные аккаунты всем везде и всюду</p></li>
+<li><p>Одной рабочей станцией могут пользоваться разные люди.</p></li>
+<li><p>Сеть потенциально не надёжна.</p></li>
+</ul>
+</div>
+<div id="краткое-описание.-терминология" class="slide section level1">
+<h1>Краткое описание. Терминология</h1>
+<ul>
+<li><p>Key Distribution Center (KDC) - центральный сервер, который знает все сервисы и всех пользователей</p></li>
+<li><p>realm - все участники организации живут в одном “королевстве” (realm), обычно реалм = имя домена в капсе, типа YANDEX.RU. В больших оганизациях может быть несколько реалмов (CLICKHOUSE.YANDEX.RU, MARKETING.YANDEX.RU), KDC которых могут между собой как-то общаться</p></li>
+<li><p>И пользователи и серверы - называются принципалы, у каждого есть уникальное имя - строковой идентификатор (UPN milovidov@yandex.ru, SPN http/www-server.yandex.ru) и общий с KDC секрет (пароль в случае пользователя, keytab-файл в случае сервиса).</p></li>
+</ul>
+</div>
+<div id="краткое-описание.-протокол." class="slide section level1">
+<h1>Краткое описание. Протокол.</h1>
+<ul>
+<li><p>Пользователь логинится на KDC один раз за сессию (при логине на станцию или с помощью команды kinit) и получает билет для получения других билетов (TGT=ticket granting ticket), и хранит его пока он действителен (или до logout / kdestroy)</p></li>
+<li><p>Потом пользуясь этим билетом он может просить билеты на всевозможные сервисы - почта, веб, базы данных и т.д.</p></li>
+<li><p>Сервер KDC получает запросы типа “пользователь с принципалом UPN u и с билетом TGT t хочет билет чтобы воспользоваться сервисом с принципалом SPN s”. После чего даёт (или не даёт) пользователю билет, позволяющий воспользоваться конкретным сервисом.</p></li>
+<li><p>Пользователь идет с этим билетом в сервис и получает доступ.</p></li>
+<li><p>Никакой другой пользователь (с другого хоста, перехвативший трафик и т.п.) гарантированно не сможет этим воспользоваться - шифрование, взаимная аутентификация, сессии, expiration и т.д. и т.п.</p></li>
+</ul>
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Kerberos.svg" /></p>
+</div>
+<div id="краткое-описание.-дополнительные-требования-накладываемые-на-систему." class="slide section level1">
+<h1>Краткое описание. Дополнительные требования накладываемые на систему.</h1>
+<ul>
+<li>Требует правильных и разрешающихся (предпочтительно - в обе стороны) доменных имён (у всех участников - и у пользователей и у сервисов) если ты предъявишь билет полученный на другом хосте - то не пустят.</li>
+<li>Требует синхронизации часов с просроченным билетом не пустят</li>
+<li>Шифрование на уровне канала не обязательно (билетики уже зашифрованы), но КТО логинится может быть видно.</li>
+</ul>
+</div>
+<div id="vs-ldap" class="slide section level1">
+<h1>vs LDAP:</h1>
+<ul>
+<li>LDAP authentication is centralized authentication, meaning <strong>you have to login with every service</strong>, but if you change your password it changes everywhere.</li>
+<li>Kerberos is single sign-on (SSO), meaning you login once and get a token and don’t need to login to other services.</li>
+<li>LDAP is less convenient but simpler.</li>
+<li>Kerberos is more convenient but more complex. From: https://security.stackexchange.com/a/109574</li>
+</ul>
+</div>
+<div id="vs-ldap-2" class="slide section level1">
+<h1>vs LDAP 2:</h1>
+<ul>
+<li>При LDAP пароли не будут хранится на КХ, но логиниться нужно каждый раз заново.</li>
+<li>Kerberos защищает пользователя от всевозможных атак, LDAP сам по себе никаких защит не предоставляет (там можно открытым текстом пароли слать), он просто позволяет проверить - соответствует ли логин паролю.</li>
+<li>Kerberos сам по себе описывает только процедуру/протокол аутентификации, но не описывает как KDC должен хранить пароли и пользователей. В простых сценариях можно всех пользователей и сервисы запихать в простой текстовый файлик. По мере роста - появляются всякие всякие сложные ACL, роли и т.п. Хранить всё это в текстовом файлике - становится очень утомительно, и нужна база данных которая это будет хранить</li>
+<li>Поэтому довольно часто Kerberos используют <strong>в сочетании</strong> с LDAP: https://help.ubuntu.com/lts/serverguide/kerberos-ldap.html Типичный пример: Active Directory: the usernames and passwords the Kerberos authentication server checks are actually stored in a LDAP directory.</li>
+</ul>
+</div>
+<div id="vs-x.509-сертификаты" class="slide section level1">
+<h1>vs X.509 сертификаты:</h1>
+<ul>
+<li>В x.509 при использовании пользовательских сертификатов аутентификация встроена в транспортный уровень (SSL / TSL)</li>
+<li>это удобно и классно, нужно будет поддержать.</li>
+</ul>
+</div>
+<div id="софт" class="slide section level1">
+<h1>Софт:</h1>
+<ul>
+<li>Под *никсами есть 2 сервера KDC: mit vs heimdal (первый раньше имел экспортные ограничения, сейчас всё ок)</li>
+<li>На проде чаще всего люди пользуются Windows Active Directory, который в том числе умеет работать как KDC.</li>
+</ul>
+</div>
+<div id="базы-которые-уже-умеют" class="slide section level1">
+<h1>Базы которые уже умеют</h1>
+<ul>
+<li>MsSQL, Oracle, Postgres, MySQL и т.д., короче примерно все mature
+<ul>
+<li>https://mariadb.com/kb/en/authentication-plugin-gssapi/</li>
+</ul></li>
+</ul>
+</div>
+<div id="что-нужно-пользователям-запрос-от-крупной-security-oriented-фирмы" class="slide section level1">
+<h1>Что нужно пользователям (запрос от крупной security-oriented фирмы):</h1>
+<p>For kerberos as a first pass:</p>
+<ul>
+<li><p>all we need is to auth the username against Kerberos and not have to store a password in a config and the user having to store it in all kinds of unsafe locations; no need for role mapping via LDAP etc. (unless it’s really easy to do)</p></li>
+<li><p>We’d need the HTTP server in clickhouse to do Kerberos auth - most users start with JDBC driver or http drivers</p></li>
+<li><p>If it’s easy to add into the native protocol it would be very useful as well.</p></li>
+<li><p>It would be awesome if clickhouse-client would be able to auth using the current kerberos principal (or have an option to choose the principal). Same for clickhouse-cpp.</p></li>
+<li><p>As a first pass, we’re fine with adding users to the configs manually (or some scripts) and set a flag to say kerberos instead of sha256_sum for the auth part (we need support <strong>for both options</strong> at the same time)</p></li>
+<li><p>We’re fine defining the permissions using the current config format.</p></li>
+</ul>
+</div>
+<div id="на-когда" class="slide section level1">
+<h1>На когда:</h1>
+<div>
+<ul class="incremental">
+<li>Конец марта.</li>
+<li>ну по-крайней мере какой-то прогресс надо показать. :)</li>
+</ul>
+</div>
+</div>
+<div id="декомпозиция-задачи" class="slide section level1">
+<h1>Декомпозиция задачи</h1>
+<ol style="list-style-type: decimal">
+<li>создание спецификации (in progress)</li>
+<li>server-side поддержка в протоколе HTTP (тесты с помощью curl)</li>
+<li>server-side и client-side поддержка в нативном протоколе (обратная совместимость!)</li>
+<li>never-ending процесс “добавить поддержку Kerberos для клиента ХХХХ”</li>
+</ol>
+</div>
+<div id="дополнительные-требования-к-кх" class="slide section level1">
+<h1>Дополнительные требования к КХ</h1>
+<ol start="5" style="list-style-type: decimal">
+<li>Несколько AD пользователей = один пользователь БД, но видимо нужно знать, кто именно это был (query log и т.п.)</li>
+<li>возможность ограничить макс. время жизни сессии (после какого-то таймаута - нужен релогин)</li>
+<li>Delegation Token. Есть возможность “передавать билет дальше” (пока out of scope). Т.е. если пользователь во время пользования КХ решит сходить в mysql, то там есть какие-то возможности “передавать билетики”. Кликхаус также потенциально должен уметь работать в таком режиме, например для Табло https://help.tableau.com/current/server/en-us/kerberos_delegation.htm</li>
+<li>когда-нибудь можно поддержать и для mysql port</li>
+</ol>
+</div>
+<div id="kerberos-в-http" class="slide section level1">
+<h1>Kerberos в HTTP</h1>
+<ul>
+<li>Есть несколько подходов, все не безупречны и имеют <a href="http://people.apache.org/~jorton/ac08eu/kerb-sso-http.pdf">свои недостатки</a></li>
+<li>Самый широко используемый, и имеющий собственное RFC: WWW-Authenticate: Negotiate
+<ul>
+<li>http://tools.ietf.org/html/rfc4559</li>
+<li>базирутеся на SPNEGO https://tools.ietf.org/html/rfc4178</li>
+<li>изобретён в недрах Microsoft для IE / IISc в 2005</li>
+<li>но как-то прижилось и сейчас его умеют более-менее все.</li>
+</ul></li>
+</ul>
+</div>
+<div id="клиенты-умеющие-httpspnego-rfc4559" class="slide section level1">
+<h1>клиенты, умеющие http/SPNEGO (rfc4559)</h1>
+<ul>
+<li>chrome https://www.chromium.org/developers/design-documents/http-authentication</li>
+<li>firefox https://developer.mozilla.org/en-US/docs/Mozilla/Integrated_authentication</li>
+<li>safari https://support.pingidentity.com/s/article/How-to-configure-supported-browsers-for-Kerberos-NTLM</li>
+<li>IE</li>
+<li>curl (ура, можно будет сделать простые тесты)</li>
+<li>поддержка в том или ином виде есть примерно для любого ЯП (хотя примерно всегда это сторонний модуль).</li>
+</ul>
+</div>
+<div id="серверы-умеющие-httpspnego-rfc4559" class="slide section level1">
+<h1>серверы, умеющие http/SPNEGO (rfc4559)</h1>
+<ul>
+<li>IIS: https://techcommunity.microsoft.com/t5/iis-support-blog/setting-up-kerberos-authentication-for-a-website-in-iis/ba-p/347882</li>
+<li>Apache: http://www.microhowto.info/howto/configure_apache_to_use_kerberos_authentication.html</li>
+<li>nginx: ngx_http_auth_spnego_module https://github.com/stnoonan/spnego-http-auth-nginx-module/blob/master/ngx_http_auth_spnego_module.c</li>
+<li>короче референс имплементации тоже известны</li>
+</ul>
+</div>
+<div id="с-перспективы-кода-c" class="slide section level1">
+<h1>С перспективы кода C++:</h1>
+<div>
+<ul class="incremental">
+<li><p>написать свою собственную, векторную, MPP, SIMD-оптимизированную реализацию Kerberos.</p></li>
+<li><p>воспользоваться кодом MIT <code>#include &lt;krb5.h&gt;</code></p></li>
+<li><p>воспользоваться GSSAPI (SPNEGO и rfc4559 основаны на нём) <code>#include &lt;gssapi/gssapi.h&gt;</code></p></li>
+<li><p>воспользоваться sasl <code>#include &lt;sasl.h&gt;</code></p>
+<ul class="incremental">
+<li>который включает GSSAPI</li>
+<li>который уже есть у нас в contrib (может быть wrapping w SPNEGO надо будет сделать самим)</li>
+<li>по этой дороге пошли hadoop, kafka, и др.</li>
+<li>Потенциально позволяет расширять методы аутентификации до любых других поддерживаемых в sasl</li>
+<li>готовые биндинги sasl существуют для многих ЯП (писателям клиентов будет проще)</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="clickhouse.-как-конфигурировать" class="slide section level1">
+<h1>ClickHouse. Как конфигурировать</h1>
+<ul>
+<li>хотим избежать необходимости создавать всех пользователей из AD в КХ</li>
+<li>поэтому кажется логичным подход по типу MySQL</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb1-1"><a href="#cb1-1"></a>    <span class="kw">CREATE</span> <span class="fu">USER</span> sql_admin</span>
+<span id="cb1-2"><a href="#cb1-2"></a>      <span class="kw">IDENTIFIED</span> <span class="kw">WITH</span> authentication_windows</span>
+<span id="cb1-3"><a href="#cb1-3"></a>        <span class="kw">AS</span> <span class="st">&#39;user@yandex.ru,user2@yandex.ru&#39;</span>;</span></code></pre></div>
+<ul>
+<li>в конфиге могло бы быть что-то типа
+<ul>
+<li>в config.xml</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">&lt;sasl&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>  <span class="kw">&lt;gssapi_keytab_path&gt;</span>/etc/clickhouse-server/clickhhouse.keytab<span class="kw">&lt;/gssapi_keytab_path&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>  <span class="co">&lt;!-- If the value is &#39;*&#39;, the web server will attempt to login with every principal specified in the keytab file --&gt;</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>  <span class="kw">&lt;gssapi_principal_name&gt;</span>clickhouse/server-123@YANDEX.RU<span class="kw">&lt;/gssapi_principal_name&gt;</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>  <span class="co">&lt;!-- The SPNEGO server principal begins with the prefix HTTP/ by convention  --&gt;</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a>  <span class="kw">&lt;gssapi_http_principal_name&gt;</span>HTTP/server-123@YANDEX.RU<span class="kw">&lt;/gssapi_http_principal_name&gt;</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="kw">&lt;/sasl&gt;</span></span></code></pre></div>
+<ul>
+<li>в users.xml</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode xml"><code class="sourceCode xml"><span id="cb3-1"><a href="#cb3-1"></a> <span class="kw">&lt;default&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>    <span class="kw">&lt;sasl_authentiaction&gt;&lt;/sasl_authentiaction&gt;</span> <span class="co">&lt;!-- allow to use sasl for that user, every logged user will be default --&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>    <span class="co">&lt;!-- or --&gt;</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>    <span class="kw">&lt;sasl_authentiaction&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a>      <span class="kw">&lt;gssapi_upn&gt;</span>user1@ALTINITY.COM<span class="kw">&lt;/gssapi_upn&gt;</span><span class="co">&lt;!-- map those users to default --&gt;</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a>      <span class="kw">&lt;gssapi_upn&gt;</span>user2@ALTINITY.COM<span class="kw">&lt;/gssapi_upn&gt;</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a>    <span class="kw">&lt;/sasl_authentiaction&gt;</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a> <span class="kw">&lt;/default&gt;</span></span></code></pre></div>
+<ul>
+<li>что-то ещё?</li>
+</ul></li>
+</ul>
+</div>
+<div id="clickhouse.-поддержка-в-http." class="slide section level1">
+<h1>ClickHouse. Поддержка в HTTP.</h1>
+<div>
+<ul class="incremental">
+<li>создание тестового стенда с reference реализацией (nginx поверх КХ), и тестами из curl и/или из питона</li>
+<li>инициализация объекта sasl (<code>sasl_server_init</code>) - насколько я понимаю нужет один на всё приложение (conditionally? context? global?)</li>
+<li>если не прислал ничего про авторизацию - отвечает 401 плюс доп. заголовок <code>WWW-Authenticate: Negotiate</code></li>
+<li>если клиент продолжает общение то там должно быть <code>Authorization: Negotiate spnego_encoded_string</code></li>
+<li>декодируем spnego_encoded_string (base64 decode и маппинг в структуру) - проверяем что клиент выбрал что-то поддерживаемое, извлекаем payload делаем <code>sasl_server_new</code> и передаём ему payload</li>
+<li>ищем какому пользователю БД соответствует залогинившийся и пускаем/не пускаем.</li>
+<li>вроде должно работать (finger crossed), пробуем наш тест, главный вопрос - SPNEGO vs sasl, обратная совместимость c Basic</li>
+<li>когда-нибудь можно будет поддержать другие варианты SPNEGO</li>
+</ul>
+</div>
+</div>
+<div id="clickhouse.-поддержка-в-http.-sample-implementations" class="slide section level1">
+<h1>ClickHouse. Поддержка в HTTP. Sample implementations</h1>
+<ul>
+<li>https://github.com/stnoonan/spnego-http-auth-nginx-module/blob/master/ngx_http_auth_spnego_module.c</li>
+<li>https://github.com/modauthgssapi/mod_auth_gssapi/blob/master/src/mod_auth_gssapi.c</li>
+<li>https://github.com/samba-team/samba/blob/master/source3/libads/sasl_wrapping.c</li>
+<li>https://github.com/cyrusimap/cyrus-sasl/blob/master/sample/sample-server.c</li>
+<li>https://github.com/cyrusimap/cyrus-sasl/blob/master/sample/http_digest_client.c</li>
+</ul>
+</div>
+<div id="clickhouse.-поддержка-в-native-протоколе." class="slide section level1">
+<h1>ClickHouse. Поддержка в Native протоколе.</h1>
+<div>
+<ul class="incremental">
+<li>сейчас имя пользователя и пароль передаются в открытом виде в hello пакете
+<ul class="incremental">
+<li>https://github.com/ClickHouse/ClickHouse/blob/fbb51a5a19eb53e85de79a88334e295c21504436/dbms/src/Client/Connection.cpp#L168-L169</li>
+<li>https://github.com/ClickHouse/ClickHouse/blob/800026c55ef025bb0f7d9ec6d2271780463a1b62/dbms/programs/server/TCPHandler.cpp#L799-L800</li>
+</ul></li>
+<li>структуру hello пакета лучше не менять (обратная совместимость)</li>
+<li>если клиент хочет работать как раньше - то делает всё как раньше.</li>
+<li>если клиент хочет/готов воспользоваться sasl - то отправляет специальные значение в полях пользователя и пароля (например пустое имя пользователя, и sasl в качестве пароля)</li>
+<li>тогда сервер проводит обычные раунды аутентификации с клиентом - выбор протокола аутентификации, и т.д. Все в соответствии с sasl (можно сразу поддержать какой-то доп. способ аутентификации, например Digest)</li>
+<li>если пользователь пытается отправить имя пользователя и пароль, при этом для него включена <strong>только</strong> sasl аутентификация - то отвечает специальным статусом, типа authentication type rejected</li>
+<li>потребуется немного доп. конфигурации по стороне клиента (TBD).</li>
+<li>если делать всё правильно - то пароль не надо хранить в памяти (обнулять переменные и т.п.) но эта задача на втором плане.</li>
+</ul>
+</div>
+</div>
+<div id="clickhouse.-поддержка-в-native-протоколе.-sample-implementations" class="slide section level1">
+<h1>ClickHouse. Поддержка в Native протоколе. sample implementations</h1>
+<ul>
+<li>https://github.com/cyrusimap/cyrus-sasl/blob/master/sample/sample-server.c</li>
+</ul>
+</div>
+<div id="clickhouse.-альтернативный-вариант" class="slide section level1">
+<h1>ClickHouse. Альтернативный вариант</h1>
+<ul>
+<li>можно предложить аутентификацию с использованием LDAP (проще)</li>
+</ul>
+</div>
+<div id="references.-kerberos" class="slide section level1">
+<h1>References. Kerberos</h1>
+<h3 id="почитать-по-русски">Почитать по-русски:</h3>
+<ul>
+<li>http://www.javacogito.net/index.php/%D0%91%D0%B5%D0%B7%D0%BE%D0%BF%D0%B0%D1%81%D0%BD%D0%BE%D1%81%D1%82%D1%8C_%D0%B2_Hadoop._Kerberos</li>
+<li>https://www.intuit.ru/studies/courses/531/387/lecture/8998</li>
+<li>https://pro-ldap.ru/</li>
+</ul>
+<h3 id="объяснение-принципов-и-мотивов-реализации-в-виде-диалога-создателей">Объяснение принципов и мотивов реализации (в виде диалога создателей)</h3>
+<ul>
+<li>http://web.mit.edu/Kerberos/dialogue.html</li>
+</ul>
+<h3 id="по-английски">По английски:</h3>
+<ul>
+<li>https://www.roguelynn.com/words/explain-like-im-5-kerberos/</li>
+<li>https://help.ubuntu.com/lts/serverguide/kerberos.html</li>
+<li>https://help.ubuntu.com/community/Kerberos</li>
+</ul>
+<h3 id="официальный-сайт">Официальный сайт:</h3>
+<ul>
+<li>https://web.mit.edu/kerberos/</li>
+</ul>
+<h3 id="возможные-атаки">Возможные атаки</h3>
+<ul>
+<li>https://www.varonis.com/blog/kerberos-authentication-explained/</li>
+</ul>
+</div>
+<div id="references.-книжка-с-животным" class="slide section level1">
+<h1>References. Книжка с животным</h1>
+<p><img src="https://covers.oreillystatic.com/images/9780596004033/lrg.jpg" /></p>
+</div>
+<div id="other-unsorted-sources" class="slide section level1">
+<h1>Other unsorted sources</h1>
+<h3 id="nice-step-by-step">Nice step by step</h3>
+<ul>
+<li>https://wiki.zimbra.com/wiki/Running_Kerberos_with_Zimbra_Collaboration_Suite</li>
+<li>https://inbo.github.io/tutorials/installation/user/user_install_kerberos/</li>
+</ul>
+<h3 id="java-world.-httpspnego-authentication">Java world. HTTP/SPNEGO Authentication</h3>
+<ul>
+<li>https://docs.oracle.com/javase/10/security/part-vi-http-spnego-authentication.htm#JSSEC-GUID-996F729E-5FEA-4E29-A32A-78FB510B2D80</li>
+</ul>
+<h3 id="lower-lever-spnego-roundtrip">Lower-lever SPNEGO roundtrip</h3>
+<ul>
+<li>https://medium.com/<span class="citation">@robert.broeckelmann/kerberos-wireshark-captures-a-spnego-example-e22e6b1d662a</span></li>
+</ul>
+</div>
+<div id="other-unsorted-sources.-docker-for-tests" class="slide section level1">
+<h1>Other unsorted sources. Docker (for tests)</h1>
+<ul>
+<li>https://hub.docker.com/r/godatadriven/krb5-kdc-server/</li>
+<li>https://github.com/nirko-rnd/Docker.NGINX-Kerberos</li>
+<li>https://github.com/criteo/kerberos-docker/blob/master/build/krb5-centos/kdc-server/Dockerfile.template</li>
+<li>https://hub.docker.com/r/sequenceiq/kerberos/</li>
+<li>https://github.com/ist-dsi/docker-kerberos</li>
+<li>https://github.com/jcmturner/gokrb5-test/tree/master/testenv</li>
+</ul>
+</div>
+</body>
+</html>
